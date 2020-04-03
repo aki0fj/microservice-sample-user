@@ -17,14 +17,10 @@ const user3Id = generator.users[2]._id.toString()
 
 const mongod = new MongoMemoryServer({
   instance: {
-    port: 27017,
-    dbName: 'mongo-mem-test',
-    debug: false,
   },
   binary: {
     version: 'latest',
   },
-  autoStart: true,
 })
 
 const app = express()
@@ -32,20 +28,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use('/users/:id/follows', router)
 
-test.before(() => {
-  async function con() {
-    try {
-      const uri = 'mongodb://localhost:27017/mongo-mem-test'
-      await mongoose.connect(uri, { useNewUrlParser: true })
-      console.log('test: connect ' + uri)
-      clearInterval(timerId)
-    }
-    catch(err) {
-      console.log('test: connect err' + err)
-    }
-  }
-
-  const timerId = setInterval(con, 1000)
+test.before(async () => {
+  const uri = await mongod.getConnectionString()
+  mongoose.connect(uri, { useNewUrlParser: true })
 })
 
 test.beforeEach(async () => {
